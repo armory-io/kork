@@ -37,13 +37,10 @@ public class SecretManager {
     if (secretEngine == null) {
       throw new InvalidSecretFormatException("Secret Engine does not exist: " + encryptedSecret.getEngineIdentifier());
 
-    } else if(!secretEngine.validate(encryptedSecret)) {
-      throw new InvalidSecretFormatException();
-
-    } else {
-      return secretEngine.decrypt(encryptedSecret);
-
     }
+
+    secretEngine.validate(encryptedSecret);
+    return secretEngine.decrypt(encryptedSecret);
   }
 
   public String decryptFile(String filePathOrEncrypted) throws IOException, SecretDecryptionException {
@@ -56,15 +53,9 @@ public class SecretManager {
     SecretEngine secretEngine = secretEngineRegistry.getEngine(encryptedSecret.getEngineIdentifier());
     if (secretEngine == null) {
       throw new InvalidSecretFormatException("Secret Engine does not exist: " + encryptedSecret.getEngineIdentifier());
-
-    } else if(!secretEngine.validate(encryptedSecret)) {
-      throw new InvalidSecretFormatException();
-
-    } else {
-      return decryptedFilePath(secretEngine, encryptedSecret);
-
     }
-
+    secretEngine.validate(encryptedSecret);
+    return decryptedFilePath(secretEngine, encryptedSecret);
   }
 
   public String decryptedFilePath(SecretEngine secretEngine, EncryptedSecret encryptedSecret) throws IOException, SecretDecryptionException {

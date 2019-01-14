@@ -21,14 +21,14 @@ public class SecretDecryptionException extends Exception {
   public SecretDecryptionException () { }
 
   public SecretDecryptionException (String message) {
-    super (message);
+    super(message);
   }
 
   public SecretDecryptionException (Throwable cause) {
-    super (cause);
+    super(cause);
   }
 
   public SecretDecryptionException (String message, Throwable cause) {
-    super (message, cause);
+    super(message, cause);
   }
 }

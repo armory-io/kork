@@ -59,7 +59,7 @@ public class SecretManagerTest {
     MockitoAnnotations.initMocks(this);
     when(secretEngineRegistry.getEngine("s3")).thenReturn(secretEngine);
     when(secretEngine.identifier()).thenReturn("s3");
-    when(secretEngine.validate(any())).thenReturn(true);
+//    when(secretEngine.validate(any())).thenReturn(true);
     secretManager.setSecretEngineRegistry(secretEngineRegistry);
   }
 
@@ -67,7 +67,7 @@ public class SecretManagerTest {
   public void decryptTest() throws SecretDecryptionException {
     String secretConfig = "encrypted:s3!paramName:paramValue";
     when(secretEngine.decrypt(any())).thenReturn("test");
-    when(secretEngine.validate(any())).thenReturn(true);
+//    when(secretEngine.validate(any())).thenReturn(true);
     assertEquals("test", secretManager.decrypt(secretConfig));
   }
 
@@ -82,7 +82,7 @@ public class SecretManagerTest {
 
   @Test
   public void decryptInvalidParams() throws SecretDecryptionException {
-    when(secretEngine.validate(any())).thenReturn(false);
+//    when(secretEngine.validate(any())).thenReturn(false);
     String secretConfig = "encrypted:s3!paramName:paramValue";
     exceptionRule.expect(InvalidSecretFormatException.class);
     secretManager.decrypt(secretConfig);
@@ -110,7 +110,7 @@ public class SecretManagerTest {
 
   @Test
   public void decryptFileInvalidParams() throws SecretDecryptionException, IOException {
-    when(secretEngine.validate(any())).thenReturn(false);
+//    when(secretEngine.validate(any())).thenReturn(false);
     String secretConfig = "encrypted:s3!paramName:paramValue";
     exceptionRule.expect(InvalidSecretFormatException.class);
     secretManager.decryptFile(secretConfig);

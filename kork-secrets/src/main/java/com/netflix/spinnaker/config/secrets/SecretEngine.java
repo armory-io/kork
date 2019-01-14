@@ -36,7 +36,7 @@ public interface SecretEngine {
    * @return boolean indicating the EncryptedSecret contains the correct parameters
    * @throws InvalidSecretFormatException
    */
-  boolean validate(EncryptedSecret encryptedSecret) throws InvalidSecretFormatException;
+  void validate(EncryptedSecret encryptedSecret) throws InvalidSecretFormatException;
 
   default EncryptedSecret encrypt(String secretToEncrypt) throws UnsupportedOperationException {
     throw new UnsupportedOperationException("This operation is not supported");
