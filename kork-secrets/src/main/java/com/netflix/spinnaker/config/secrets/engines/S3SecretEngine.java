@@ -17,61 +17,57 @@
 package com.netflix.spinnaker.config.secrets.engines;
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.RegionUtils;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.S3Object;
 import com.netflix.spinnaker.config.secrets.EncryptedSecret;
 import com.netflix.spinnaker.config.secrets.InvalidSecretFormatException;
-import com.netflix.spinnaker.config.secrets.SecretEngine;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Set;
 
 @Component
 public class S3SecretEngine extends AbstractStorageSecretEngine {
-  private boolean enablePathStyleAccess = false;
-  private String endpoint = "";
-
   private static String IDENTIFIER = "s3";
 
   public String identifier() { return S3SecretEngine.IDENTIFIER;}
 
+  @Override
+  public void validate(EncryptedSecret encryptedSecret) throws InvalidSecretFormatException {
+    super.validate(encryptedSecret);
+    Region region = RegionUtils.getRegion(encryptedSecret.getParams().get(STORAGE_REGION));
+    if (region == null) {
+      throw new InvalidSecretFormatException("Invalid s3 region " + region);
+    }
+
+    if (!RegionUtils.getRegionsForService("s3").contains(region)) {
+      throw new InvalidSecretFormatException("Invalid region " + region + " for s3 service");
+    }
+  }
 
   @Override
   protected InputStream downloadRemoteFile(EncryptedSecret encryptedSecret) throws IOException {
-    AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard();
     String region = encryptedSecret.getParams().get(STORAGE_REGION);
     String bucket = encryptedSecret.getParams().get(STORAGE_BUCKET);
     String objName = encryptedSecret.getParams().get(STORAGE_FILE_URI);
 
-    if (!endpoint.isEmpty()) {
-      s3ClientBuilder.setEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, region));
-      if (enablePathStyleAccess) {
-        s3ClientBuilder.setPathStyleAccessEnabled(true);
-      }
-    } else {
-      s3ClientBuilder = s3ClientBuilder.withRegion(region);
-    }
-
+    AmazonS3ClientBuilder s3ClientBuilder = AmazonS3ClientBuilder.standard()
+      .withRegion(region);
     AmazonS3 s3Client = s3ClientBuilder.build();
 
     try {
       S3Object s3Object = s3Client.getObject(bucket, objName);
       return s3Object.getObjectContent();
 
-    } catch (AmazonClientException ex) {
+    } catch (AmazonClientException e) {
       String msg = String.format(
         "Error reading contents of S3. Region: %s, Bucket: %s, Object: %s. " +
           "Check connectivity and permissions to that bucket: %s ",
-        region, bucket, objName, ex.toString());
-      throw new IOException(msg);
+        region, bucket, objName, e.toString());
+      throw new IOException(msg, e);
     }
   }
 }

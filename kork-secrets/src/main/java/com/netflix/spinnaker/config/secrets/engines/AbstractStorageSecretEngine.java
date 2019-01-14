@@ -20,11 +20,9 @@ import com.netflix.spinnaker.config.secrets.EncryptedSecret;
 import com.netflix.spinnaker.config.secrets.InvalidSecretFormatException;
 import com.netflix.spinnaker.config.secrets.SecretDecryptionException;
 import com.netflix.spinnaker.config.secrets.SecretEngine;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,10 +36,6 @@ public abstract class AbstractStorageSecretEngine implements SecretEngine {
   protected final static String STORAGE_PROP_KEY = "k";
 
   protected Map<String, Map<String,Object>> cache = new HashMap<>();
-
-  @Autowired
-  protected Yaml yamlParser;
-
 
   public String decrypt(EncryptedSecret encryptedSecret) throws SecretDecryptionException {
     String fileUri = encryptedSecret.getParams().get(STORAGE_FILE_URI);
@@ -117,7 +111,7 @@ public abstract class AbstractStorageSecretEngine implements SecretEngine {
   }
 
   protected void parseAsYaml(String fileURI, InputStream inputStream) {
-    Map<String,Object> parsed = (Map<String, Object>) yamlParser.load(inputStream);
+    Map<String,Object> parsed = (Map<String, Object>) new Yaml().load(inputStream);
     cache.put(fileURI, parsed);
   }
 

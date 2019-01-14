@@ -37,7 +37,6 @@ public class AbstractStorageEngineTest {
   @Test
   public void canParseYaml() throws SecretDecryptionException {
     ByteArrayInputStream bis = readStream("test: value\na:\n  b: othervalue\nc:\n  - d\n  - e");
-    engine.yamlParser = new Yaml();
     engine.parseAsYaml("a/b", bis);
     assertEquals("value", engine.getParsedValue("a/b", "test"));
     assertEquals("othervalue", engine.getParsedValue("a/b", "a.b"));

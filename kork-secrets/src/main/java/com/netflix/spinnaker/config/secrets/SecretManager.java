@@ -29,7 +29,14 @@ public class SecretManager {
   @Autowired
   private SecretEngineRegistry secretEngineRegistry;
 
-  public String decrypt(String configValue) throws InvalidSecretFormatException, SecretDecryptionException {
+  /**
+   * Decrypt will deserialize the configValue into an EncryptedSecret object and decrypted based on the
+   * secretEngine referenced in the configValue.
+   *
+   * @param configValue
+   * @return secret in plaintext
+   */
+  public String decrypt(String configValue) {
     EncryptedSecret encryptedSecret = EncryptedSecret.parse(configValue);
     if (encryptedSecret == null) { return configValue; }
 
@@ -37,14 +44,29 @@ public class SecretManager {
     if (secretEngine == null) {
       throw new InvalidSecretFormatException("Secret Engine does not exist: " + encryptedSecret.getEngineIdentifier());
 
-    }
+    } else {
+      secretEngine.validate(encryptedSecret);
+      return secretEngine.decrypt(encryptedSecret);
 
-    secretEngine.validate(encryptedSecret);
-    return secretEngine.decrypt(encryptedSecret);
+    }
   }
 
-  public String decryptFile(String filePathOrEncrypted) throws IOException, SecretDecryptionException {
-    // similar but make temp file with decrypted content
+  /**
+   * DecryptFile will deserialize the configValue into an EncryptedSecret object, decrypts the EncryptedSecret based
+   * on the secretEngine referenced in the configValue, writes the decrypted value into a temporary file, and returns
+   * the absolute path to the temporary file.
+   *
+   * Based on the EncryptedSecret's parameters, the contents of the temporary file can be:
+   * - The decrypted contents of a file stored externally
+   * OR (if a key is present in the EncryptedSecret's parameters)
+   * - The value of the key in the external file
+   *
+   * Note: The temporary file that is created is deleted upon exiting the application.
+   *
+   * @param filePathOrEncrypted
+   * @return path to temporary file that contains decrypted contents
+   */
+  public String decryptFile(String filePathOrEncrypted) {
     if (!EncryptedSecret.isEncryptedSecret(filePathOrEncrypted)) {
       return filePathOrEncrypted;
     }
@@ -53,19 +75,27 @@ public class SecretManager {
     SecretEngine secretEngine = secretEngineRegistry.getEngine(encryptedSecret.getEngineIdentifier());
     if (secretEngine == null) {
       throw new InvalidSecretFormatException("Secret Engine does not exist: " + encryptedSecret.getEngineIdentifier());
+
+    } else {
+      secretEngine.validate(encryptedSecret);
+      return decryptedFilePath(secretEngine, encryptedSecret);
+
     }
-    secretEngine.validate(encryptedSecret);
-    return decryptedFilePath(secretEngine, encryptedSecret);
+
   }
 
-  public String decryptedFilePath(SecretEngine secretEngine, EncryptedSecret encryptedSecret) throws IOException, SecretDecryptionException {
-    String clearText = secretEngine.decrypt(encryptedSecret);
-    File tempFile = File.createTempFile(secretEngine.identifier() + '-', ".secret");
-    FileWriter fileWriter = new FileWriter(tempFile);
-    fileWriter.write(clearText);
-    fileWriter.close();
-    tempFile.deleteOnExit();
-    return tempFile.getAbsolutePath();
+  protected String decryptedFilePath(SecretEngine secretEngine, EncryptedSecret encryptedSecret) {
+    String plainText = secretEngine.decrypt(encryptedSecret);
+    try {
+      File tempFile = File.createTempFile(secretEngine.identifier() + '-', ".secret");
+      try (FileWriter fileWriter = new FileWriter(tempFile)) {
+        fileWriter.write(plainText);
+      }
+      tempFile.deleteOnExit();
+      return tempFile.getAbsolutePath();
+    } catch (IOException e) {
+      throw new SecretDecryptionException();
+    }
   }
 
   void setSecretEngineRegistry(SecretEngineRegistry secretEngineRegistry) {

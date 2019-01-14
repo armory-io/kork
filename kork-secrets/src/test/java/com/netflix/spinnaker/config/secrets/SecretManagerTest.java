@@ -24,9 +24,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.matches;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -40,6 +37,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.*;
 
 public class SecretManagerTest {
 
@@ -59,7 +57,6 @@ public class SecretManagerTest {
     MockitoAnnotations.initMocks(this);
     when(secretEngineRegistry.getEngine("s3")).thenReturn(secretEngine);
     when(secretEngine.identifier()).thenReturn("s3");
-//    when(secretEngine.validate(any())).thenReturn(true);
     secretManager.setSecretEngineRegistry(secretEngineRegistry);
   }
 
@@ -67,7 +64,6 @@ public class SecretManagerTest {
   public void decryptTest() throws SecretDecryptionException {
     String secretConfig = "encrypted:s3!paramName:paramValue";
     when(secretEngine.decrypt(any())).thenReturn("test");
-//    when(secretEngine.validate(any())).thenReturn(true);
     assertEquals("test", secretManager.decrypt(secretConfig));
   }
 
@@ -82,7 +78,7 @@ public class SecretManagerTest {
 
   @Test
   public void decryptInvalidParams() throws SecretDecryptionException {
-//    when(secretEngine.validate(any())).thenReturn(false);
+    doThrow(InvalidSecretFormatException.class).when(secretEngine).validate(any());
     String secretConfig = "encrypted:s3!paramName:paramValue";
     exceptionRule.expect(InvalidSecretFormatException.class);
     secretManager.decrypt(secretConfig);
@@ -100,7 +96,7 @@ public class SecretManagerTest {
   }
 
   @Test
-  public void decryptFileSecretEngineNotFound() throws SecretDecryptionException, IOException {
+  public void decryptFileSecretEngineNotFound() throws SecretDecryptionException {
     when(secretEngineRegistry.getEngine("does-not-exist")).thenReturn(null);
     String secretConfig = "encrypted:does-not-exist!paramName:paramValue";
     exceptionRule.expect(InvalidSecretFormatException.class);
@@ -109,27 +105,24 @@ public class SecretManagerTest {
   }
 
   @Test
-  public void decryptFileInvalidParams() throws SecretDecryptionException, IOException {
-//    when(secretEngine.validate(any())).thenReturn(false);
+  public void decryptFileInvalidParams() throws SecretDecryptionException {
+    doThrow(InvalidSecretFormatException.class).when(secretEngine).validate(any());
     String secretConfig = "encrypted:s3!paramName:paramValue";
     exceptionRule.expect(InvalidSecretFormatException.class);
     secretManager.decryptFile(secretConfig);
   }
 
   @Test
-  public void decryptFileNoDiskSpace() throws SecretDecryptionException, IOException {
+  public void decryptFileNoDiskSpace() throws SecretDecryptionException {
     SecretManager mockedSecretManager = mock(SecretManager.class);
     when(secretEngine.decrypt(any())).thenReturn("test");
-    when(mockedSecretManager.decryptedFilePath(any(), any())).thenThrow(IOException.class);
-    when(mockedSecretManager.decryptFile(any())).thenCallRealMethod();
+    when(mockedSecretManager.decryptedFilePath(any(), any())).thenThrow(SecretDecryptionException.class);
     doCallRealMethod().when(mockedSecretManager).setSecretEngineRegistry(any());
     mockedSecretManager.setSecretEngineRegistry(secretEngineRegistry);
-    exceptionRule.expect(IOException.class);
-
+    exceptionRule.expect(SecretDecryptionException.class);
     String secretConfig = "encrypted:s3!paramName:paramValue";
     mockedSecretManager.decryptFile(secretConfig);
   }
-
 
 }
 
