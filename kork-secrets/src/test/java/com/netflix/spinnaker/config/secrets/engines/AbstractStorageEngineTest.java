@@ -8,6 +8,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import static org.junit.Assert.assertEquals;
 
@@ -18,7 +19,7 @@ public class AbstractStorageEngineTest {
   public void init() {
     engine = new AbstractStorageSecretEngine() {
       @Override
-      protected ByteArrayInputStream downloadRemoteFile(String fileURI, EncryptedSecret encryptedSecret) throws IOException {
+      protected InputStream downloadRemoteFile(EncryptedSecret encryptedSecret) throws IOException {
         return null;
       }
 

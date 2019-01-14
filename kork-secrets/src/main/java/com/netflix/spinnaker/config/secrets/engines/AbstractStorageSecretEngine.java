@@ -27,6 +27,7 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 @Component
@@ -46,21 +47,21 @@ public abstract class AbstractStorageSecretEngine implements SecretEngine {
     String fileUri = encryptedSecret.getParams().get(STORAGE_FILE_URI);
     String key = encryptedSecret.getParams().get(STORAGE_PROP_KEY);
 
-    ByteArrayInputStream bis = null;
+    InputStream is = null;
     try {
       if (key == null || !cache.containsKey(fileUri)) {
         // We don't cache direct file references
-        bis = downloadRemoteFile(encryptedSecret);
+        is = downloadRemoteFile(encryptedSecret);
       }
 
       // Return the whole content as a string
       if (key == null) {
-        return readAll(bis);
+        return new String(readAll(is));
       }
 
       // Parse as YAML
       if (!cache.containsKey(fileUri)) {
-        parseAsYaml(fileUri, bis);
+        parseAsYaml(fileUri, is);
       }
       return getParsedValue(fileUri, key);
 
@@ -68,9 +69,9 @@ public abstract class AbstractStorageSecretEngine implements SecretEngine {
       throw new SecretDecryptionException(e);
 
     } finally {
-      if (bis != null) {
+      if (is != null) {
         try {
-          bis.close();
+          is.close();
         } catch (IOException e) {}
       }
     }
@@ -98,10 +99,10 @@ public abstract class AbstractStorageSecretEngine implements SecretEngine {
     throw new UnsupportedOperationException("This operation is not supported");
   }
 
-  protected abstract ByteArrayInputStream downloadRemoteFile(EncryptedSecret encryptedSecret) throws IOException;
+  protected abstract InputStream downloadRemoteFile(EncryptedSecret encryptedSecret) throws IOException;
 
 
-  protected String readAll(ByteArrayInputStream inputStream) throws IOException {
+  protected byte[] readAll(InputStream inputStream) throws IOException {
     try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
       byte[] buf = new byte[4096];
       for (;;) {
@@ -111,11 +112,11 @@ public abstract class AbstractStorageSecretEngine implements SecretEngine {
         }
         out.write(buf, 0, read);
       }
-      return new String(out.toByteArray());
+      return out.toByteArray();
     }
   }
 
-  protected void parseAsYaml(String fileURI, ByteArrayInputStream inputStream) {
+  protected void parseAsYaml(String fileURI, InputStream inputStream) {
     Map<String,Object> parsed = (Map<String, Object>) yamlParser.load(inputStream);
     cache.put(fileURI, parsed);
   }
