@@ -35,6 +35,7 @@ public abstract class AbstractStorageSecretEngine implements SecretEngine {
   protected final static String STORAGE_FILE_URI = "f";
   protected final static String STORAGE_PROP_KEY = "k";
 
+  // Local cache of downloaded and parsed files
   protected Map<String, Map<String,Object>> cache = new HashMap<>();
 
   public String decrypt(EncryptedSecret encryptedSecret) throws SecretDecryptionException {
@@ -89,9 +90,6 @@ public abstract class AbstractStorageSecretEngine implements SecretEngine {
     }
   }
 
-  public EncryptedSecret encrypt(String secretToEncrypt) throws UnsupportedOperationException {
-    throw new UnsupportedOperationException("This operation is not supported");
-  }
 
   protected abstract InputStream downloadRemoteFile(EncryptedSecret encryptedSecret) throws IOException;
 

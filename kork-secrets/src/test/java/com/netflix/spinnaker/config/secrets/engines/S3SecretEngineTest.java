@@ -19,11 +19,9 @@ package com.netflix.spinnaker.config.secrets.engines;
 
 import com.netflix.spinnaker.config.secrets.EncryptedSecret;
 import com.netflix.spinnaker.config.secrets.InvalidSecretFormatException;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.yaml.snakeyaml.Yaml;
 
 import static org.junit.Assert.*;
 
@@ -68,16 +66,16 @@ public class S3SecretEngineTest {
 
 //  @Test
 //  public void decryptFile() {
-//    EncryptedSecret encryptedSecret = EncryptedSecret.parse("encrypted:s3!b:somebucket!r:us-west-2!f:versions.yml");
+//    EncryptedSecret encryptedSecret = EncryptedSecret.parse("encrypted:s3!b:some-bucket!r:us-west-2!f:secrets.yml");
 //    String val = s3Engine.decrypt(encryptedSecret);
 //    assertNotNull(val);
 //  }
 
 //  @Test
 //  public void decryptWithKey() {
-//    EncryptedSecret encryptedSecret = EncryptedSecret.parse("encrypted:s3!b:halconfig!r:us-west-2!f:versions.yml!k:latestSpinnaker");
+//    EncryptedSecret encryptedSecret = EncryptedSecret.parse("encrypted:s3!b:some-bucket!r:us-east-2!f:secrets.yml!k:password");
 //    String val = s3Engine.decrypt(encryptedSecret);
-//    assertEquals("2.1.0", val);
+//    assertEquals("mypassword", val);
 //  }
 
 }
