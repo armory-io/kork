@@ -30,10 +30,10 @@ import java.util.*;
 
 @Component
 public abstract class AbstractStorageSecretEngine implements SecretEngine {
-  protected final static String STORAGE_BUCKET = "b";
-  protected final static String STORAGE_REGION = "r";
-  protected final static String STORAGE_FILE_URI = "f";
-  protected final static String STORAGE_PROP_KEY = "k";
+  final static String STORAGE_BUCKET = "b";
+  final static String STORAGE_REGION = "r";
+  final static String STORAGE_FILE_URI = "f";
+  final static String STORAGE_PROP_KEY = "k";
 
   // Local cache of downloaded and parsed files
   protected Map<String, Map<String,Object>> cache = new HashMap<>();
@@ -94,7 +94,7 @@ public abstract class AbstractStorageSecretEngine implements SecretEngine {
   protected abstract InputStream downloadRemoteFile(EncryptedSecret encryptedSecret) throws IOException;
 
 
-  protected byte[] readAll(InputStream inputStream) throws IOException {
+  private byte[] readAll(InputStream inputStream) throws IOException {
     try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
       byte[] buf = new byte[4096];
       for (;;) {
@@ -108,12 +108,12 @@ public abstract class AbstractStorageSecretEngine implements SecretEngine {
     }
   }
 
-  protected void parseAsYaml(String fileURI, InputStream inputStream) {
+  void parseAsYaml(String fileURI, InputStream inputStream) {
     Map<String,Object> parsed = (Map<String, Object>) new Yaml().load(inputStream);
     cache.put(fileURI, parsed);
   }
 
-  protected String getParsedValue(String fileURI, String yamlPath) throws SecretDecryptionException {
+  String getParsedValue(String fileURI, String yamlPath) throws SecretDecryptionException {
     String[] pathElts = yamlPath.split("\\.");
     Map<String,Object> parsed = cache.get(fileURI);
 
