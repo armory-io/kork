@@ -20,21 +20,17 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.matches;
-
-import static org.hamcrest.MatcherAssert.assertThat;
 
 
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -47,7 +43,7 @@ public class SecretManagerTest {
   @Mock
   SecretEngine secretEngine;
 
-  SecretManager secretManager = new SecretManager();
+  SecretManager secretManager;
 
   @Rule
   public ExpectedException exceptionRule = ExpectedException.none();
@@ -57,7 +53,8 @@ public class SecretManagerTest {
     MockitoAnnotations.initMocks(this);
     when(secretEngineRegistry.getEngine("s3")).thenReturn(secretEngine);
     when(secretEngine.identifier()).thenReturn("s3");
-    secretManager.setSecretEngineRegistry(secretEngineRegistry);
+    secretManager = new SecretManager(secretEngineRegistry);
+    //secretManager.setSecretEngineRegistry(secretEngineRegistry);
   }
 
   @Test
@@ -88,9 +85,9 @@ public class SecretManagerTest {
   public void decryptFile() throws SecretDecryptionException, IOException {
     String secretConfig = "encrypted:s3!paramName:paramValue";
     when(secretEngine.decrypt(any())).thenReturn("test");
-    String tempFilPath = secretManager.decryptFile(secretConfig);
-    assertTrue(tempFilPath.matches(".*s3.*.secret$"));
-    BufferedReader reader = new BufferedReader(new FileReader(tempFilPath));
+    Path path = secretManager.decryptFile(secretConfig);
+    assertTrue(path.toAbsolutePath().toString().matches(".*s3.*.secret$"));
+    BufferedReader reader = new BufferedReader(new FileReader(path.toFile()));
     assertEquals("test", reader.readLine());
     reader.close();
   }
@@ -113,16 +110,13 @@ public class SecretManagerTest {
   }
 
   @Test
-  public void decryptFileNoDiskSpace() throws SecretDecryptionException {
-    SecretManager mockedSecretManager = mock(SecretManager.class);
-    when(secretEngine.decrypt(any())).thenReturn("test");
-    when(mockedSecretManager.decryptedFilePath(any(), any())).thenThrow(SecretDecryptionException.class);
-    doCallRealMethod().when(mockedSecretManager).setSecretEngineRegistry(any());
-    mockedSecretManager.setSecretEngineRegistry(secretEngineRegistry);
+  public void decryptFileNoDiskSpaceMock() throws SecretDecryptionException {
+    SecretManager spy = spy(new SecretManager(secretEngineRegistry));
+    doThrow(SecretDecryptionException.class).when(spy).decryptedFilePath(any(), any());
+    doCallRealMethod().when(spy).decryptFile(any());
     exceptionRule.expect(SecretDecryptionException.class);
     String secretConfig = "encrypted:s3!paramName:paramValue";
-    mockedSecretManager.decryptFile(secretConfig);
+    spy.decryptFile(secretConfig);
   }
-
 }
 
