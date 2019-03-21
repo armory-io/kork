@@ -23,7 +23,6 @@ import org.springframework.stereotype.Component;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -76,10 +75,11 @@ public class SecretManager {
     }
   }
 
-  protected byte[] decryptAsBytes(String encryptedString) {
+  public byte[] decryptAsBytes(String encryptedString) {
     EncryptedSecret encryptedSecret = EncryptedSecret.parse(encryptedString);
     if (encryptedSecret == null) {
-      throw new SecretException(String.format("Invalid call to decryptAsBytes with unencrypted string: %s", encryptedString));
+      return encryptedString.getBytes();
+//      throw new SecretException(String.format("Invalid call to decryptAsBytes with unencrypted string: %s", encryptedString));
     }
 
     SecretEngine secretEngine = secretEngineRegistry.getEngine(encryptedSecret.getEngineIdentifier());
