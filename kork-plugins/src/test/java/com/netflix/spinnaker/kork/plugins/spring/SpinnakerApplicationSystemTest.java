@@ -50,7 +50,8 @@ public class SpinnakerApplicationSystemTest {
         };
 
     void main(String... args) {
-      PluginLoader pluginLoader = new PluginLoader("./src/test/resources/plugins.yml");
+      PluginLoader pluginLoader =
+          new PluginLoader(new PluginDownloader(), "./src/test/resources/plugins.yml");
       SpinnakerApplication.initialize(pluginLoader, DEFAULT_PROPS, TestApplication.class, args);
     }
   }

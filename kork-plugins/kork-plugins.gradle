@@ -6,10 +6,13 @@ dependencies {
   api(platform(project(":spinnaker-dependencies")))
   api project(":kork-exceptions")
 
+  implementation "commons-io:commons-io"
   api "org.springframework.boot:spring-boot-starter-web"
   implementation("com.google.guava:guava")
-
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
+  api "com.squareup.okhttp:okhttp"
+  api "com.squareup.okhttp3:okhttp"
+  api "com.squareup.retrofit:retrofit"
 
   testImplementation "org.codehaus.groovy:groovy-all"
   testImplementation("org.mockito:mockito-core")

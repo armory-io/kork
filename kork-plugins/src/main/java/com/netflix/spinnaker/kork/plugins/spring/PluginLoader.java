@@ -19,12 +19,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.annotations.Beta;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -40,16 +39,20 @@ import org.slf4j.LoggerFactory;
 public class PluginLoader {
 
   static final String DEFAULT_PLUGIN_CONFIG_PATH = "/opt/spinnaker/config/plugins.yml";
+  static final String DEFAULT_PLUGIN_DIRECTORY = "/opt/spinnaker/plugins";
   private static final Logger log = LoggerFactory.getLogger(PluginLoader.class);
 
+  private PluginDownloader pluginDownloader;
   private String filename;
 
-  PluginLoader(String filename) {
+  PluginLoader(PluginDownloader pluginDownloader, String filename) {
     this.filename = filename;
+    this.pluginDownloader = pluginDownloader;
   }
 
   PluginLoader() {
     this(
+        new PluginDownloader(),
         Optional.ofNullable(System.getenv("PLUGIN_CONFIG_LOCATION"))
             .orElse(PluginLoader.DEFAULT_PLUGIN_CONFIG_PATH));
   }
@@ -59,9 +62,10 @@ public class PluginLoader {
    * jar paths to the classpath in order for plugins to load.
    *
    * @param source The parent class loader for delegation
+   * @return EncryptedSecret object
    */
   public void loadPlugins(Class source) {
-    URL[] urls;
+    URL[] localJarPaths;
     if (checkFileExists() == false) {
       log.info("Not loading plugins: No plugin configuration file found: {}", this.filename);
       return;
@@ -70,14 +74,14 @@ public class PluginLoader {
       PluginProperties props = parsePluginConfigs(inputStream);
       List<PluginProperties.PluginConfiguration> pluginConfigurations = getEnabledJars(props);
       logPlugins(pluginConfigurations);
-      urls = getJarPathsFromPluginConfigurations(pluginConfigurations);
+      localJarPaths = pluginDownloader.downloadPluginJars(pluginConfigurations);
     } catch (IOException e) {
       throw new MissingPluginConfigurationException(
           String.format(
               "Not loading plugins: No plugin configuration file found: %s", this.filename),
           e);
     }
-    addJarsToClassPath(source, urls);
+    addJarsToClassPath(source, localJarPaths);
   }
 
   /**
@@ -122,33 +126,6 @@ public class PluginLoader {
     return pluginProperties.pluginConfigurationList.stream()
         .filter(p -> p.enabled == true)
         .collect(Collectors.toList());
-  }
-
-  /**
-   * @param pluginConfigurations
-   * @return List<URL> List of paths to jars, where enabled is true
-   */
-  private URL[] getJarPathsFromPluginConfigurations(
-      List<PluginProperties.PluginConfiguration> pluginConfigurations) {
-    return pluginConfigurations.stream()
-        .map(PluginProperties.PluginConfiguration::getJars)
-        .flatMap(Collection::stream)
-        .map(Paths::get)
-        .map(this::getUrlFromPath)
-        .distinct()
-        .toArray(URL[]::new);
-  }
-
-  /**
-   * @param path
-   * @return path as a URL
-   */
-  private URL getUrlFromPath(Path path) {
-    try {
-      return path.toUri().toURL();
-    } catch (MalformedURLException e) {
-      throw new MalformedPluginConfigurationException(e);
-    }
   }
 
   /**

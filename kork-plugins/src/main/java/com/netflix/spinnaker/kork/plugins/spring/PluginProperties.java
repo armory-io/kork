@@ -40,13 +40,15 @@ public class PluginProperties {
     }
   }
 
+  /**
+   * Ensures plugins are unique. By ensuring unique names, we do not have to worry about duplicate
+   * versions nor downloading a plugin that already exists locally.
+   */
   public void validateUniquePlugins() {
-
     List<String> pluginNames =
         pluginConfigurationList.stream()
             .map(PluginConfiguration::getName)
             .collect(Collectors.toList());
-
     List<String> duplicates =
         pluginNames.stream()
             .filter(e -> Collections.frequency(pluginNames, e) > 1)

@@ -40,7 +40,7 @@ class PluginLoaderSpec extends Specification {
 
   def "should return enabled plugin paths"() {
     given:
-    subject = new PluginLoader(null)
+    subject = new PluginLoader()
     PluginProperties.PluginConfiguration pluginConfiguration1 = new PluginProperties.PluginConfiguration("namespace/p1", ["p1/path"], plugin1Enabled)
     PluginProperties.PluginConfiguration pluginConfiguration2 = new PluginProperties.PluginConfiguration("namespace/p2", ["p2/path"], plugin2Enabled)
 
@@ -60,7 +60,7 @@ class PluginLoaderSpec extends Specification {
 
   def "can parse plugin configs"() {
     given:
-    subject = new PluginLoader(null)
+    subject = new PluginLoader()
 
     when:
     def config = [
@@ -86,28 +86,9 @@ class PluginLoaderSpec extends Specification {
     true           | true
   }
 
-  def "should only add a jar to the classpath once"() {
-    given:
-    subject = new PluginLoader(null)
-
-    when:
-    PluginProperties.PluginConfiguration pluginConfiguration1 = new PluginProperties.PluginConfiguration("namespace/p1", plugin1Jars, true)
-    PluginProperties.PluginConfiguration pluginConfiguration2 = new PluginProperties.PluginConfiguration("namespace/p2", plugin2Jars, true)
-    pluginConfigurationArrayList = [ pluginConfiguration1, pluginConfiguration2 ]
-    pluginProperties = new PluginProperties(pluginConfigurationArrayList)
-
-    then:
-    subject.getJarPathsFromPluginConfigurations(pluginProperties.pluginConfigurationList) == expected
-
-    where:
-    plugin1Jars | plugin2Jars | expected
-    ["foo/bar"] | ["bar/baz"] | [Paths.get("foo/bar").toUri().toURL(), Paths.get("bar/baz").toUri().toURL()]
-    ["foo/bar"] | ["foo/bar"] | [Paths.get("foo/bar").toUri().toURL()]
-  }
-
   def "Plugin names should only be unique"() {
     when:
-    subject = new PluginLoader(null)
+    subject = new PluginLoader()
     PluginProperties.PluginConfiguration pluginConfiguration1 = new PluginProperties.PluginConfiguration("foo/bar", [], true)
     PluginProperties.PluginConfiguration pluginConfiguration2 = new PluginProperties.PluginConfiguration("foo/bar", [], true)
     pluginConfigurationArrayList = [ pluginConfiguration1, pluginConfiguration2 ]
