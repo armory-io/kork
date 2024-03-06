@@ -3,7 +3,7 @@ apply plugin: "java-platform"
 javaPlatform {
   allowDependencies()
 }
-artifactoryPublish.skip = true
+artifactoryPublish.skip = false
 dependencies {
   api(platform(project(":spinnaker-dependencies")))
   constraints {
