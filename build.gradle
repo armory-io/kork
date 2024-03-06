@@ -75,3 +75,8 @@ subprojects {
     }
   }
 }
+task version {
+  doLast {
+    print version
+  }
+}
