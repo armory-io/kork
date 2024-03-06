@@ -58,6 +58,18 @@ artifactory {
 subprojects {
   group = "io.spinnaker.kork"
   apply plugin: 'nebula.maven-publish'
+  afterEvaluate {
+    if (it.name != "kork-bom" && it.name != "spinnaker-dependencies") {
+      dependencies {
+        annotationProcessor(platform(project(":spinnaker-dependencies")))
+        annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+        testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
+      }
+      artifactoryPublish {
+        publications("nebula")
+      }
+    }
+  }
   if (it.name != "kork-bom" && it.name != "spinnaker-dependencies") {
     apply plugin: 'java-library'
     test {
@@ -69,9 +81,6 @@ subprojects {
       annotationProcessor(platform(project(":spinnaker-dependencies")))
       annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
       testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
-    }
-    artifactoryPublish {
-      publications("nebula")
     }
   }
 }
