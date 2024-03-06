@@ -16,7 +16,7 @@
 
 plugins {
   id 'nebula.maven-publish' version '8.1.0'
-  id "com.jfrog.artifactory" version "4.13.0"
+  id "com.jfrog.artifactory" version "5.2.0"
   id 'nebula.release' version '15.0.2'
   id 'io.spinnaker.project' version "$spinnakerGradleVersion" apply false
   id "org.jetbrains.kotlin.jvm" version "$kotlinVersion" apply false
