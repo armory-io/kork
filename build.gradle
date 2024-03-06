@@ -26,6 +26,7 @@ plugins {
 
 allprojects {
   apply plugin: "io.spinnaker.project"
+  apply plugin: 'com.jfrog.artifactory'
 }
 
 artifactory {
@@ -54,9 +55,8 @@ artifactory {
   clientConfig.info.setBuildNumber(getProperties().get("JFROG_CLI_BUILD_NUMBER", project.getVersion()).toString())
 
 }
-
+artifactoryPublish.skip=true
 subprojects {
-  group = "io.spinnaker.kork"
   apply plugin: 'nebula.maven-publish'
   afterEvaluate {
     if (it.name != "kork-bom" && it.name != "spinnaker-dependencies") {
