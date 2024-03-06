@@ -1,4 +1,3 @@
-artifactoryPublish.skip = false
 dependencies {
   // Add each included runtime project as a runtime dependency
   gradle.includedRuntimeProjects.each {

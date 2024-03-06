@@ -17,7 +17,7 @@
 
 apply plugin: "java-library"
 apply from: "$rootDir/gradle/kotlin-test.gradle"
-artifactoryPublish.skip = false
+
 dependencies {
   implementation(platform(project(":spinnaker-dependencies")))
   implementation "org.springframework.security:spring-security-core"
