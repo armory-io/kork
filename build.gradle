@@ -75,7 +75,7 @@ subprojects {
     }
   }
 }
-task version {
+task printVersion {
   doLast {
     print version
   }
