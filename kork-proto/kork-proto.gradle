@@ -2,7 +2,7 @@ plugins {
   id "java-library"
   id "com.google.protobuf" version "0.8.12"
 }
-
+artifactoryPublish.skip = false
 dependencies {
   api(platform(project(":spinnaker-dependencies")))
 

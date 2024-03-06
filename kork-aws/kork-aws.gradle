@@ -15,7 +15,7 @@
  */
 apply plugin: "java-library"
 apply plugin: "groovy"
-
+artifactoryPublish.skip = false
 dependencies {
   api(platform(project(":spinnaker-dependencies")))
 
