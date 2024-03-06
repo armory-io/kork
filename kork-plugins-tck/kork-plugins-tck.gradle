@@ -1,6 +1,6 @@
 apply from: "$rootDir/gradle/kotlin.gradle"
 apply from: "$rootDir/gradle/lombok.gradle"
-
+artifactoryPublish.skip = false
 dependencies {
   api(platform(project(":spinnaker-dependencies")))
 

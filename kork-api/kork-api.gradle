@@ -1,6 +1,6 @@
 apply plugin: "java-library"
 apply from: "$rootDir/gradle/lombok.gradle"
-
+artifactoryPublish.skip = false
 dependencies {
   api(platform(project(":spinnaker-dependencies")))
   api project(":kork-plugins-api")

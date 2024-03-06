@@ -3,6 +3,7 @@ apply plugin: "java-platform"
 javaPlatform {
   allowDependencies()
 }
+artifactoryPublish.skip = true
 
 ext {
   versions = [
