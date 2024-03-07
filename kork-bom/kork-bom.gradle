@@ -1,27 +1,8 @@
 apply plugin: "java-platform"
-apply plugin: "nebula.maven-publish"
-
 javaPlatform {
   allowDependencies()
 }
-// without this building the pom fails when using the Nebula publishing plugin
-configurations {
-  implementation
-}
-artifactoryPublish.skip = false
-// This is a BOM - aka there is actually no CODE - it's PURE BOM
-publishing {
-  publications {
-    nebula(MavenPublication) {
-      from components.javaPlatform
-    }
-  }
-}
 
-artifactoryPublish {
-  skip = false //Skip build info analysis and publishing (false by default)
-  publications ('nebula')
-}
 
 dependencies {
   api(platform(project(":spinnaker-dependencies")))

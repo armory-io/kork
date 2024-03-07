@@ -15,9 +15,9 @@
  */
 
 plugins {
-  id 'nebula.maven-publish' version '8.1.0'
-  id "com.jfrog.artifactory" version "4.13.0"
-  id 'nebula.release' version '15.0.2'
+//  id 'nebula.maven-publish' version '8.1.0'
+    id "com.jfrog.artifactory" version "5.+"
+//  id 'nebula.release' version '15.0.2'
   id 'io.spinnaker.project' version "$spinnakerGradleVersion" apply false
   id "org.jetbrains.kotlin.jvm" version "$kotlinVersion" apply false
   id "io.gitlab.arturbosch.detekt" version "1.17.1" apply false
@@ -37,36 +37,26 @@ artifactory {
       repoKey = "armory-gradle-local"
       username = "${artifactory_user}"
       password = "${artifactory_password}"
-      maven = true
     }
     defaults {
-      publications('nebula', 'defaultSettingsPluginMarkerMaven', 'pluginsDownloaderPluginMarkerMaven')
+      publications('ALL_PUBLICATIONS')
+      publishPom = true // Publish generated POM files to Artifactory (true by default)
     }
-  }
-  resolve {
-    repository {
-      repoKey = "gradle-release"
-      username = "${artifactory_user}"
-      password = "${artifactory_password}"
-      maven = true
 
-    }
   }
+
   clientConfig.info.setBuildNumber(getProperties().get("JFROG_CLI_BUILD_NUMBER", project.getVersion()).toString())
 
 }
 artifactoryPublish.skip=true
 subprojects {
-  apply plugin: 'nebula.maven-publish'
+  apply plugin: 'maven-publish'
   afterEvaluate {
     if (it.name != "kork-bom" && it.name != "spinnaker-dependencies") {
       dependencies {
         annotationProcessor(platform(project(":spinnaker-dependencies")))
         annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
         testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
-      }
-      artifactoryPublish {
-        publications("nebula")
       }
     }
   }
@@ -82,9 +72,7 @@ subprojects {
       annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
       testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
     }
-    artifactoryPublish {
-      publications("nebula")
-    }
+
   }
 }
 task printVersion {
