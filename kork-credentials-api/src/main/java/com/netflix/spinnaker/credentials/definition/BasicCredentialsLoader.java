@@ -18,13 +18,15 @@ package com.netflix.spinnaker.credentials.definition;
 
 import com.netflix.spinnaker.credentials.Credentials;
 import com.netflix.spinnaker.credentials.CredentialsRepository;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * CredentialsLoader that expects the full list of credentials on each load, and updates the
@@ -33,11 +35,12 @@ import lombok.extern.slf4j.Slf4j;
  * @param <T>
  * @param <U>
  */
-@Slf4j
 public class BasicCredentialsLoader<T extends CredentialsDefinition, U extends Credentials>
     extends AbstractCredentialsLoader<U> {
   protected final CredentialsParser<T, U> parser;
   protected final CredentialsDefinitionSource<T> definitionSource;
+
+  private static final Logger log = LoggerFactory.getLogger(BasicCredentialsLoader.class);
   /**
    * When parallel is true, the loader may apply changes in parallel. See {@link
    * java.util.concurrent.ForkJoinPool} for limitations. This can be useful when adding or updating
